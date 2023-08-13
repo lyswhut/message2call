@@ -1,0 +1,53 @@
+{
+  "name": "message2call",
+  "version": "0.1.0",
+  "description": "Convert Send Message and on Message to asynchronous get and call style",
+  "main": "./dist/message2call.js",
+  "module": "./dist/message2call.esm.js",
+  "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rollup -c && rollup -c rollup.config.iife.js"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/message2call.js",
+      "default": "./dist/message2call.esm.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lyswhut/message2call.git"
+  },
+  "keywords": [
+    "javascript",
+    "worker",
+    "websocket"
+  ],
+  "author": "lyswhut",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lyswhut/message2call/issues"
+  },
+  "homepage": "https://github.com/lyswhut/message2call#readme",
+  "devDependencies": {
+    "@babel/core": "^7.22.10",
+    "@babel/plugin-proposal-class-properties": "^7.18.6",
+    "@babel/plugin-proposal-object-rest-spread": "^7.20.7",
+    "@babel/preset-env": "^7.22.10",
+    "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-commonjs": "^25.0.4",
+    "@rollup/plugin-node-resolve": "^15.1.0",
+    "@rollup/plugin-terser": "^0.4.3",
+    "@rollup/plugin-typescript": "^11.1.2",
+    "@tsconfig/recommended": "^1.0.2",
+    "@types/node": "^20.4.10",
+    "eslint-config-standard-with-typescript": "^37.0.0",
+    "rollup": "^3.28.0",
+    "typescript": "^5.1.6"
+  }
+}
