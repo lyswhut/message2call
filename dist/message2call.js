@@ -63,6 +63,12 @@ const funcsTools = {
                 data: result,
             });
         }
+        else if (obj[name] === undefined) {
+            this.sendMessage({
+                name: eventName,
+                error: `${name} is not defined`,
+            });
+        }
         else {
             this.sendMessage({
                 name: eventName,
