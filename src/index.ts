@@ -9,7 +9,7 @@ interface GetDataHandle extends GetDataHandleFn {
 }
 type Events = Map<string, GetDataHandle>
 
-interface SyncGroup {
+interface QueueGroup {
   handling: boolean
   queue: Array<[() => void, (error: Error) => void]>
 }
@@ -19,16 +19,16 @@ const noop = () => {}
 const funcsTools = {
   funcsObj: emptyObj as ReadObj,
   events: emptyObj as Events,
-  syncGroups: emptyObj as Map<string, SyncGroup>,
+  queueGroups: emptyObj as Map<string, QueueGroup>,
   sendMessage: noop as (data: any) => void,
   onError: noop as NonNullable<Options['onError']>,
   onCallBeforeParams: undefined as Options['onCallBeforeParams'],
-  timeout: 10 * 1000,
+  timeout: 120 * 1000,
 
   init<T>(options: Options) {
     this.funcsObj = options.funcsObj
     this.events = new Map()
-    this.syncGroups = new Map()
+    this.queueGroups = new Map()
     this.sendMessage = options.sendMessage
     if (options.timeout != null) this.timeout = options.timeout
     if (options.onError != null) this.onError = options.onError
@@ -76,13 +76,13 @@ const funcsTools = {
   },
   handleGroupNextTask(groupName: string, error?: Error) {
     nextTick(() => {
-      const group = (this.syncGroups.get(groupName) as SyncGroup)
+      const group = (this.queueGroups.get(groupName) as QueueGroup)
       group.handling = false
       if (group.queue.length) {
         if (error == null) {
-          (group.queue.shift() as SyncGroup['queue'][number])[0]()
+          (group.queue.shift() as QueueGroup['queue'][number])[0]()
         } else {
-          (group.queue.shift() as SyncGroup['queue'][number])[1](error)
+          (group.queue.shift() as QueueGroup['queue'][number])[1](error)
         }
       }
     })
@@ -91,7 +91,7 @@ const funcsTools = {
     // console.log(groupName, pathname, data)
     const eventName = `${pathname.join('.')}__${String(Math.random()).substring(2)}`
     if (groupName != null) {
-      let group = this.syncGroups.get(groupName) as SyncGroup
+      let group = this.queueGroups.get(groupName) as QueueGroup
       if (group.handling) {
         await new Promise<void>((resolve, reject) => {
           group.queue.push([resolve, (error: Error) => {
@@ -189,10 +189,10 @@ export const createMsg2call = <T>(options: Options) => {
      */
     remote: tools.init<T>(options),
     /**
-     * create remote proxy object of synchronous calls
+     * create remote proxy object of queue calls
      */
-    createSyncRemote<T>(groupName: string) {
-      tools.syncGroups.set(groupName, { handling: false, queue: [] })
+    createQueueRemote<T>(groupName: string) {
+      tools.queueGroups.set(groupName, { handling: false, queue: [] })
       return tools.createProxy<T>(tools, groupName)
     },
     /**

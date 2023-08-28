@@ -5,9 +5,9 @@ export declare const createMsg2call: <T>(options: Options) => {
      */
     remote: T;
     /**
-     * create remote proxy object of synchronous calls
+     * create remote proxy object of queue calls
      */
-    createSyncRemote<T_1>(groupName: string): T_1;
+    createQueueRemote<T_1>(groupName: string): T_1;
     /**
      * on message function
      */

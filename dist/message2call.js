@@ -11,15 +11,15 @@ const noop = () => { };
 const funcsTools = {
     funcsObj: emptyObj,
     events: emptyObj,
-    syncGroups: emptyObj,
+    queueGroups: emptyObj,
     sendMessage: noop,
     onError: noop,
     onCallBeforeParams: undefined,
-    timeout: 10 * 1000,
+    timeout: 120 * 1000,
     init(options) {
         this.funcsObj = options.funcsObj;
         this.events = new Map();
-        this.syncGroups = new Map();
+        this.queueGroups = new Map();
         this.sendMessage = options.sendMessage;
         if (options.timeout != null)
             this.timeout = options.timeout;
@@ -73,7 +73,7 @@ const funcsTools = {
     },
     handleGroupNextTask(groupName, error) {
         nextTick(() => {
-            const group = this.syncGroups.get(groupName);
+            const group = this.queueGroups.get(groupName);
             group.handling = false;
             if (group.queue.length) {
                 if (error == null) {
@@ -89,7 +89,7 @@ const funcsTools = {
         // console.log(groupName, pathname, data)
         const eventName = `${pathname.join('.')}__${String(Math.random()).substring(2)}`;
         if (groupName != null) {
-            let group = this.syncGroups.get(groupName);
+            let group = this.queueGroups.get(groupName);
             if (group.handling) {
                 await new Promise((resolve, reject) => {
                     group.queue.push([resolve, (error) => {
@@ -188,10 +188,10 @@ const createMsg2call = (options) => {
          */
         remote: tools.init(options),
         /**
-         * create remote proxy object of synchronous calls
+         * create remote proxy object of queue calls
          */
-        createSyncRemote(groupName) {
-            tools.syncGroups.set(groupName, { handling: false, queue: [] });
+        createQueueRemote(groupName) {
+            tools.queueGroups.set(groupName, { handling: false, queue: [] });
             return tools.createProxy(tools, groupName);
         },
         /**
