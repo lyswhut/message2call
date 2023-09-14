@@ -201,11 +201,11 @@ const createMsg2call = (options) => {
         /**
          * on message function
          */
-        onMessage: tools.onMessage.bind(tools),
+        message: tools.onMessage.bind(tools),
         /**
          * destroy
          */
-        onDestroy: tools.onDestroy.bind(tools),
+        destroy: tools.onDestroy.bind(tools),
     };
 };
 

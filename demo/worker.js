@@ -3,9 +3,7 @@ console.log('worker is running.')
 
 
 const exposeObj = {
-  getName(fromName) {
-    return 'hello ' + fromName + ', I am worker.js'
-  },
+  name: 'worker.js',
   async count(num) {
     return new Promise((resolve) => {
       setTimeout(() => {

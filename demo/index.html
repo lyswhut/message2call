@@ -43,15 +43,16 @@
       }
     })
     worker.onmessage = (event) => {
-      message2call.onMessage(event.data)
+      message2call.message(event.data)
     }
 
     (async() => {
-      const name = await message2call.remote.getName('index.html')
-      console.log('[index]',name)
+      const remote = message2call.remote
+      const remoteName = await remote.name
+      console.log('[index]', 'remote name is ' + remoteName)
 
-      const result = await message2call.remote.count(6)
-      console.log('[index]',result)
+      const result = await remote.count(6)
+      console.log('[index]', result)
     })()
   </script>
 

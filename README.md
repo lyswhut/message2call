@@ -54,35 +54,20 @@ see [demo](https://lyswhut.github.io/message2call/demo/index.html)
        * send message function
        */
       sendMessage: function(data) {
-        worker.postMessage(data)
-      },
-      /**
-       * on call error hook
-       */
-      onError: function(err, path, groupName) {
-        console.log('error:', err, path, groupName)
-      },
-      /**
-       * call timeout
-       */
-      timeout: 20000,
-      /**
-       * convert call params
-       */
-      onCallBeforeParams: function(rawArgs) {
-        return rawArgs
+        worker.message(data)
       }
     })
     worker.onmessage = (event) => {
-      message2call.onMessage(event.data)
+      message2call.message(event.data)
     }
 
     (async() => {
-      const name = await message2call.remote.getName('index.html')
-      console.log('[index]',name)
+      const remote = message2call.remote
+      const remoteName = await remote.name
+      console.log('[index]', 'remote name is ' + remoteName)
 
-      const result = await message2call.remote.count(6)
-      console.log('[index]',result)
+      const result = await remote.count(6)
+      console.log('[index]', result)
     })()
   </script>
 </body>
@@ -93,13 +78,9 @@ see [demo](https://lyswhut.github.io/message2call/demo/index.html)
 
 ```js
 importScripts('../dist/message2call.min.js')
-console.log('worker is running.')
-
 
 const exposeObj = {
-  getName(fromName) {
-    return 'hello ' + fromName + ', I am worker.js'
-  },
+  name: 'worker.js',
   async count(num) {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -119,22 +100,6 @@ const message2call = Message2call.createMsg2call({
   sendMessage: function(data) {
     postMessage(data)
   },
-  /**
-   * on call error hook
-   */
-  onError: function(err, path, groupName) {
-    console.log('error:', err, path, groupName)
-  },
-  /**
-   * call timeout
-   */
-  timeout: 20000,
-  /**
-   * convert call params
-   */
-  onCallBeforeParams: function(rawArgs) {
-    return rawArgs
-  }
 })
 onmessage = (event) => {
   message2call.message(event.data)

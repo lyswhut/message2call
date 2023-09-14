@@ -11,10 +11,10 @@ export declare const createMsg2call: <T>(options: Options) => {
     /**
      * on message function
      */
-    onMessage: ({ name, path, error, data }: any) => void;
+    message: ({ name, path, error, data }: any) => void;
     /**
      * destroy
      */
-    onDestroy: () => void;
+    destroy: () => void;
 };
 export type * from '../types/common';
