@@ -12,3 +12,4 @@ rollup.config.iife.js
 src
 package-lock.json
 .ncurc.js
+demo

@@ -1,1 +1,1 @@
-export declare const nextTick: (((callback: VoidFunction) => void) & typeof queueMicrotask) | typeof setTimeout;
+export declare const nextTick: typeof queueMicrotask | typeof setTimeout;
