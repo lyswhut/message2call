@@ -1,4 +1,8 @@
 import type { Options } from '../types/common';
+interface ProxyCallback {
+    __msg2call_cbname__: string;
+    releaseProxy: () => void;
+}
 interface RemoteGroup {
     handling: boolean;
     options: {
@@ -19,10 +23,18 @@ export declare const createMsg2call: <T>(options: Options) => {
     /**
      * on message function
      */
-    message: ({ name, path, error, data }: any) => void;
+    message: (message: any) => void;
     /**
      * destroy
      */
     destroy: () => void;
 };
+/**
+ * create a proxy callback
+ */
+export declare const createProxyCallback: <T extends Function>(callback: T) => T & Pick<ProxyCallback, "releaseProxy">;
+/**
+ * release all created proxy callback
+ */
+export declare const releaseAllProxyCallback: () => void;
 export type * from '../types/common';

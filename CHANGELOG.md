@@ -14,6 +14,8 @@ Change log format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Change
 
+- Add `createProxyCallback`
+- Add `releaseAllProxyCallback`
 - Add `createRemoteGroup`
 - Add `isSendErrorStack` option
 - Remove `createQueueRemote`

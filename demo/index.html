@@ -29,7 +29,7 @@
        * on call error hook
        */
       onError: function(err, path, groupName) {
-        console.log('error:', err, path, groupName)
+        // console.log('error:', err, path, groupName)
       },
       /**
        * call timeout
@@ -54,7 +54,16 @@
       const result = await remote.count(6)
       console.log('[index]', result)
 
-      remote.callFailed().catch(err => console.log('[index]', err))
+      await remote.callFailed().catch(err => console.log('[index]', err))
+
+      const onProgress = Message2call.createProxyCallback((progress) => {
+        console.log('[index]', 'download progress: ' + progress + '%')
+        if (progress == 100) {
+          onProgress.releaseProxy()
+          return 'end'
+        } else return 'progress'
+      })
+      remote.downloadFile('test.txt', onProgress)
     })()
   </script>
 

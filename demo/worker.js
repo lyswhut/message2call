@@ -18,6 +18,21 @@ const exposeObj = {
       }, 2000);
     })
   },
+  async downloadFile(title, callback) {
+    console.log('start download', title)
+    let total = 0
+    const timeout = setInterval(() => {
+      total += (Math.floor(Math.random() * 2000) + 500) / 100
+      total = Number(total.toFixed(2))
+      if (total >= 100) {
+        total = 100
+        clearInterval(timeout)
+      }
+      callback(total).then((message) => {
+        console.log('[worker]', 'callback result: ' + message)
+      })
+    }, 500)
+  },
 }
 const message2call = Message2call.createMsg2call({
   /**

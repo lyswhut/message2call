@@ -114,13 +114,11 @@ onmessage = (event) => {
 ## Options
 
 ```ts
-type ReadObj = Record<string, ((...args: any[]) => any) | string | number | object>
-
 interface Options {
   /**
    * required proxy object
    */
-  funcsObj: Readonly<ReadObj>
+  funcsObj: Readonly<Record<string, ((...args: any[]) => any) | string | number | object>>
   /**
    * send message function
    */
@@ -169,11 +167,19 @@ type createMsg2call = <T>(options: Options) => {
    */
   destroy: () => void;
 }
+/**
+ * create a proxy callback
+ */
+type createProxyCallback = <T extends Function>(callback: T) => T & { releaseProxy: () => void };
+/**
+ * release all created proxy callback
+ */
+type releaseAllProxyCallback = () => void;
 ```
 
-<!-- ## CHANGELOG
+## CHANGELOG
 
-See [CHANGELOG.md](https://github.com/lyswhut/message2call/blob/master/CHANGELOG.md) -->
+See [CHANGELOG.md](https://github.com/lyswhut/message2call/blob/master/CHANGELOG.md)
 
 ## LICENSE
 
