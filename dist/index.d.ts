@@ -1,13 +1,21 @@
 import type { Options } from '../types/common';
+interface RemoteGroup {
+    handling: boolean;
+    options: {
+        timeout?: number;
+        queue?: boolean;
+    };
+    queue: Array<[() => void, (error: Error) => void]>;
+}
 export declare const createMsg2call: <T>(options: Options) => {
     /**
      * remote proxy object
      */
     remote: T;
     /**
-     * create remote proxy object of queue calls
+     * create remote proxy object of group calls
      */
-    createQueueRemote<T_1>(groupName: string): T_1;
+    createRemoteGroup<T_1>(groupName: string, options?: RemoteGroup['options']): T_1;
     /**
      * on message function
      */

@@ -14,9 +14,13 @@ export declare interface Options {
    */
   onError?: (err: Error, path: string[], groupName: string | null) => viod
   /**
-   * call timeout
+   * call timeout, 0 will be no timeout
    */
   timeout?: number
+  /**
+   * whether the call fails to send the call stack
+   */
+  isSendErrorStack?: boolean
   /**
    * convert call params
    */

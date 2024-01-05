@@ -130,9 +130,13 @@ interface Options {
    */
   onError?: (err: Error, path: string[], groupName: string | null) => viod
   /**
-   * call timeout
+   * call timeout, 0 will be no timeout
    */
   timeout?: number
+  /**
+   * whether the call fails to send the call stack
+   */
+  isSendErrorStack?: boolean
   /**
    * convert call params
    */
@@ -144,11 +148,20 @@ type createMsg2call = <T>(options: Options) => {
    */
   remote: T;
   /**
-   * create remote proxy object of queue calls
+   * create remote proxy object of group calls
    */
-  createQueueRemote<T_1>(groupName: string): T_1;
+  createRemoteGroup<T_1>(groupName: string, options?: {
+    /**
+     * call timeout, 0 will be no timeout, default use global timeout
+     */
+    timeout?: number;
+    /**
+     * whether to use queue calls
+     */
+    queue?: boolean;
+  }): T_1;
   /**
-   * on message
+   * on message function
    */
   message: ({ name, path, error, data }: any) => void;
   /**

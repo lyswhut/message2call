@@ -53,6 +53,8 @@
 
       const result = await remote.count(6)
       console.log('[index]', result)
+
+      remote.callFailed().catch(err => console.log('[index]', err))
     })()
   </script>
 

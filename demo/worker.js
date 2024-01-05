@@ -11,6 +11,13 @@ const exposeObj = {
       }, 2000);
     })
   },
+  async callFailed() {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        reject(new Error('Test call failed'))
+      }, 2000);
+    })
+  },
 }
 const message2call = Message2call.createMsg2call({
   /**
@@ -33,6 +40,10 @@ const message2call = Message2call.createMsg2call({
    * call timeout
    */
   timeout: 20000,
+  /**
+   * whether the call fails to send the call stack
+   */
+  isSendErrorStack: true,
   /**
    * convert call params
    */

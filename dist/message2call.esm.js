@@ -9,18 +9,21 @@ const noop = () => { };
 const funcsTools = {
     funcsObj: emptyObj,
     events: emptyObj,
-    queueGroups: emptyObj,
+    remoteGroups: emptyObj,
     sendMessage: noop,
     onError: noop,
     onCallBeforeParams: undefined,
     timeout: 120 * 1000,
+    isSendErrorStack: false,
     init(options) {
         this.funcsObj = options.funcsObj;
         this.events = new Map();
-        this.queueGroups = new Map();
+        this.remoteGroups = new Map();
         this.sendMessage = options.sendMessage;
         if (options.timeout != null)
             this.timeout = options.timeout;
+        if (options.isSendErrorStack != null)
+            this.isSendErrorStack = options.isSendErrorStack;
         if (options.onError != null)
             this.onError = options.onError;
         if (options.onCallBeforeParams != null)
@@ -35,7 +38,7 @@ const funcsTools = {
             if (obj === undefined) {
                 this.sendMessage({
                     name: eventName,
-                    error: `${name} is not defined`,
+                    error: { message: `${name} is not defined` },
                 });
                 return;
             }
@@ -51,7 +54,7 @@ const funcsTools = {
             catch (err) {
                 this.sendMessage({
                     name: eventName,
-                    error: err.message,
+                    error: { message: err.message, stack: this.isSendErrorStack ? err.stack : undefined },
                 });
                 return;
             }
@@ -64,7 +67,7 @@ const funcsTools = {
         else if (obj[name] === undefined) {
             this.sendMessage({
                 name: eventName,
-                error: `${name} is not defined`,
+                error: { message: `${name} is not defined` },
             });
         }
         else {
@@ -77,7 +80,7 @@ const funcsTools = {
     },
     handleGroupNextTask(groupName, error) {
         nextTick(() => {
-            const group = this.queueGroups.get(groupName);
+            const group = this.remoteGroups.get(groupName);
             group.handling = false;
             if (group.queue.length) {
                 if (error == null) {
@@ -89,23 +92,21 @@ const funcsTools = {
             }
         });
     },
-    async getData(groupName, pathname, data) {
-        // console.log(groupName, pathname, data)
-        const eventName = `${pathname.join('.')}__${String(Math.random()).substring(2)}`;
-        if (groupName != null) {
-            let group = this.queueGroups.get(groupName);
-            if (group.handling) {
-                await new Promise((resolve, reject) => {
-                    group.queue.push([resolve, (error) => {
-                            reject(error);
-                            this.onError(error, pathname, groupName);
-                            this.handleGroupNextTask(groupName, error);
-                        }]);
-                });
-            }
-            group.handling = true;
+    async waitQueue(group, groupName, pathname) {
+        if (group.handling) {
+            await new Promise((resolve, reject) => {
+                group.queue.push([resolve, (error) => {
+                        reject(error);
+                        this.onError(error, pathname, groupName);
+                        this.handleGroupNextTask(groupName, error);
+                    }]);
+            });
         }
-        let promise = new Promise((resolve, reject) => {
+        group.handling = true;
+    },
+    async handleData(groupName, pathname, timeout, data) {
+        const eventName = `${pathname.join('.')}__${String(Math.random()).substring(2)}`;
+        return new Promise((resolve, reject) => {
             const handler = ((err, data) => {
                 if (handler.timeout)
                     clearTimeout(handler.timeout);
@@ -113,23 +114,41 @@ const funcsTools = {
                 if (err == null)
                     resolve(data);
                 else {
-                    const error = new Error(err);
+                    const error = new Error(err.message);
+                    error.stack = err.stack;
                     this.onError(error, pathname, groupName);
                     reject(error);
                 }
             });
             this.events.set(eventName, handler);
-            handler.timeout = setTimeout(() => {
-                handler.timeout = null;
-                handler('timeout');
-            }, this.timeout);
+            if (timeout) {
+                handler.timeout = setTimeout(() => {
+                    handler.timeout = null;
+                    handler('timeout');
+                }, timeout);
+            }
             this.sendMessage({
                 name: eventName,
                 path: pathname,
                 data,
             });
         });
+    },
+    async getData(groupName, pathname, data) {
+        // console.log(groupName, pathname, data)
+        let timeout = this.timeout;
+        let isQueue = false;
         if (groupName != null) {
+            let group = this.remoteGroups.get(groupName);
+            if (group.options.timeout != null)
+                timeout = group.options.timeout;
+            if (group.options.queue) {
+                isQueue = true;
+                await this.waitQueue(group, groupName, pathname);
+            }
+        }
+        let promise = this.handleData(groupName, pathname, timeout, data);
+        if (isQueue) {
             promise = promise.then((data) => {
                 this.handleGroupNextTask(groupName);
                 return data;
@@ -192,10 +211,10 @@ const createMsg2call = (options) => {
          */
         remote: tools.init(options),
         /**
-         * create remote proxy object of queue calls
+         * create remote proxy object of group calls
          */
-        createQueueRemote(groupName) {
-            tools.queueGroups.set(groupName, { handling: false, queue: [] });
+        createRemoteGroup(groupName, options = {}) {
+            tools.remoteGroups.set(groupName, { handling: false, queue: [], options });
             return tools.createProxy(tools, groupName);
         },
         /**
