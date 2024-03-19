@@ -1,6 +1,19 @@
 # Message to call
 
-Convert Send Message and on Message to asynchronous get and call style
+Convert Send Message and on Message to asynchronous get and call style.
+
+
+```
++--------------------------+           +--------------------------+
+|        Main Thread       |           |       Worker Thread      |
++--------------------------+           +--------------------------+
+|                          |           |      Expose Object {     |
+|   await remote.hello()  ---------------->     hello() {}        |
+|                          |           |      }                   |
++--------------------------+           +--------------------------+  
+```
+
+It supports message sending and receiving scenarios in workers, websockets, and more.
 
 ## Installation
 
@@ -180,6 +193,10 @@ type releaseAllProxyCallback = () => void;
 ## CHANGELOG
 
 See [CHANGELOG.md](https://github.com/lyswhut/message2call/blob/master/CHANGELOG.md)
+
+### Thanks
+
+Inspired by `comlink`: <https://github.com/GoogleChromeLabs/comlink>
 
 ## LICENSE
 
