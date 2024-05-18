@@ -2,7 +2,9 @@ const nextTick = typeof setImmediate == 'function'
     ? setImmediate
     : typeof queueMicrotask == 'function'
         ? queueMicrotask
-        : setTimeout;
+        : (callback) => {
+            void Promise.resolve().then(callback);
+        };
 
 var CALL_TYPES;
 (function (CALL_TYPES) {
