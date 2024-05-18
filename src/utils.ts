@@ -4,4 +4,6 @@ export const nextTick =
     ? setImmediate
     : typeof queueMicrotask == 'function'
       ? queueMicrotask
-      : setTimeout
+      : (callback: () => void) => {
+          void Promise.resolve().then(callback)
+        }
