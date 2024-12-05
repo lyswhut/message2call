@@ -6,6 +6,12 @@ Project versioning adheres to [Semantic Versioning](http://semver.org/).
 Commit convention is based on [Conventional Commits](http://conventionalcommits.org).
 Change log format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [1.1.1](https://github.com/lyswhut/message2call/compare/v1.1.0...v1.1.1) - 2024-12-05
+
+### Fix
+
+- Fix call timeout error message emit
+
 ## [1.1.0](https://github.com/lyswhut/message2call/compare/v1.0.0...v1.1.0) - 2024-05-17
 
 ### Change

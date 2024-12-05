@@ -3,7 +3,7 @@ import { nextTick } from './utils'
 
 type FuncsTools = typeof funcsTools
 // type EventHandlers = Array<(data?: any) => (void | Promise<void>)>
-type GetDataHandleFn = (err: null | string, data?: any) => void
+type GetDataHandleFn = (err: null | { message: string, stack?: string }, data?: any) => void
 interface GetDataHandle extends GetDataHandleFn {
   timeout?: number | null
 }
@@ -95,7 +95,7 @@ const funcsTools = {
       if (timeout) {
         handler.timeout = setTimeout(() => {
           handler.timeout = null
-          handler('timeout')
+          handler({ message: 'call remote timeout' })
         }, timeout) as unknown as number
       }
       this.sendMessage({
@@ -217,7 +217,7 @@ const funcsTools = {
       if (timeout) {
         handler.timeout = setTimeout(() => {
           handler.timeout = null
-          handler('timeout')
+          handler({ message: 'call remote timeout' })
         }, timeout) as unknown as number
       }
       this.sendMessage({
@@ -254,7 +254,7 @@ const funcsTools = {
     }
     return promise
   },
-  async handleResponse(name: string, err: string | null, data?: any) {
+  async handleResponse(name: string, err: { message: string, stack?: string } | null, data?: any) {
     const handler = this.events.get(name)
     // if (handler) {
     if (typeof handler == 'function') handler(err, data)
@@ -300,7 +300,7 @@ const funcsTools = {
   },
   onDestroy() {
     for (const handler of this.events.values()) {
-      handler('destroy')
+      handler({ message: 'destroy' })
     }
   },
 }
