@@ -19,7 +19,7 @@ export declare const createMsg2call: <T>(options: Options) => {
     /**
      * create remote proxy object of group calls
      */
-    createRemoteGroup<T_1>(groupName: string, options?: RemoteGroup['options']): T_1;
+    createRemoteGroup<T_1>(groupName: string, options?: RemoteGroup["options"]): T_1;
     /**
      * on message function
      */

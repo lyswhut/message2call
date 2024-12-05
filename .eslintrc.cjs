@@ -44,5 +44,7 @@ module.exports = {
     '*.min.js',
     'dist',
     'demo',
+    'rollup.config.iife.js',
+    'rollup.config.js',
   ],
 }

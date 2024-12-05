@@ -18,7 +18,6 @@ module.exports = {
   plugins: [
     typescript({
       tsconfig: 'tsconfig.json',
-      outDir: './',
     }),
     resolve(),
     commonjs(),

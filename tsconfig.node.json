@@ -1,0 +1,19 @@
+{
+  // https://github.com/tsconfig/bases#recommended-tsconfigjson
+  "extends": "@tsconfig/recommended/tsconfig.json",
+
+  "compilerOptions": {
+    "composite": true,
+    "target": "ESNext",
+    // typescript options here
+    "outDir": "./dist",
+    "declaration": true,
+    "allowJs": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext"
+    // "declarationMap": true,
+    // "noImplicitReturns": false,
+  },
+  "include": ["rollup.config.iife.js", "rollup.config.js"],
+  "exclude": ["node_modules"]
+}

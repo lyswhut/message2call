@@ -89,7 +89,7 @@ const funcsTools = {
             if (timeout) {
                 handler.timeout = setTimeout(() => {
                     handler.timeout = null;
-                    handler('timeout');
+                    handler({ message: 'call remote timeout' });
                 }, timeout);
             }
             this.sendMessage({
@@ -218,7 +218,7 @@ const funcsTools = {
             if (timeout) {
                 handler.timeout = setTimeout(() => {
                     handler.timeout = null;
-                    handler('timeout');
+                    handler({ message: 'call remote timeout' });
                 }, timeout);
             }
             this.sendMessage({
@@ -301,7 +301,7 @@ const funcsTools = {
     },
     onDestroy() {
         for (const handler of this.events.values()) {
-            handler('destroy');
+            handler({ message: 'destroy' });
         }
     },
 };

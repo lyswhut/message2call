@@ -3,6 +3,8 @@
   "extends": "@tsconfig/recommended/tsconfig.json",
 
   "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "composite": false,
     "target": "ESNext",
     // typescript options here
     "rootDir": "./src",
@@ -11,6 +13,8 @@
     // "declarationMap": true,
     // "noImplicitReturns": false,
     "resolveJsonModule": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     
     "baseUrl": "./src",
     "paths": {
@@ -18,5 +22,6 @@
     },
   },
   "include": ["src/**/*", "types"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "references": [{ "path": "./tsconfig.node.json" }],
 }
