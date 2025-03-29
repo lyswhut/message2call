@@ -2,9 +2,9 @@ export declare type ReadObj = Record<string, ((...args: unknown[]) => unknown) |
 
 export declare interface Options {
   /**
-   * required proxy object
+   * required expose object
    */
-  proxyObj: Readonly<ReadObj>
+  exposeObj: Readonly<ReadObj>
   /**
    * send message function
    */

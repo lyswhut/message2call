@@ -60,9 +60,9 @@ see [demo](https://lyswhut.github.io/message2call/demo/index.html)
     }
     const message2call = Message2call.createMsg2call({
       /**
-       * required proxy object
+       * required expose object
        */
-      proxyObj: exposeObj,
+      exposeObj: exposeObj,
       /**
        * send message function
        */
@@ -104,9 +104,9 @@ const exposeObj = {
 }
 const message2call = Message2call.createMsg2call({
   /**
-   * required proxy object
+   * required expose object
    */
-  proxyObj: exposeObj,
+  exposeObj: exposeObj,
   /**
    * send message function
    */
@@ -129,9 +129,9 @@ onmessage = (event) => {
 ```ts
 interface Options {
   /**
-   * required proxy object
+   * required expose object
    */
-  proxyObj: Readonly<Record<string, ((...args: any[]) => any) | string | number | object>>
+  exposeObj: Readonly<Record<string, ((...args: any[]) => any) | string | number | object>>
   /**
    * send message function
    */
@@ -155,11 +155,11 @@ interface Options {
 }
 type createMsg2call = <T>(options: Options) => {
   /**
-   * remote proxy object
+   * remote expose object
    */
   remote: T;
   /**
-   * create remote proxy object of group calls
+   * create remote expose object of group calls
    */
   createRemoteGroup<T_1>(groupName: string, options?: {
     /**
@@ -181,11 +181,11 @@ type createMsg2call = <T>(options: Options) => {
   destroy: () => void;
 }
 /**
- * create a proxy callback
+ * create a expose callback
  */
 type createProxyCallback = <T extends Function>(callback: T) => T & { releaseProxy: () => void };
 /**
- * release all created proxy callback
+ * release all created expose callback
  */
 type releaseAllProxyCallback = () => void;
 ```

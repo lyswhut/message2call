@@ -2,7 +2,7 @@ import type { Options as CommonOpts, ReadObj } from '../types/common'
 import { CALL_TYPES, type ResponseMessage, type RequestCallbackMessage, type Events, type GetDataHandle } from './shared'
 
 export interface Options {
-  proxyObj: CommonOpts['proxyObj']
+  exposeObj: CommonOpts['exposeObj']
   onCallBeforeParams: CommonOpts['onCallBeforeParams']
   events: Events
   isSendErrorStack: boolean
@@ -11,14 +11,14 @@ export interface Options {
 
 export class Local {
   private readonly events: Events
-  private readonly proxyObj: ReadObj
+  private readonly exposeObj: ReadObj
   private readonly sendResponse: (message: ResponseMessage | RequestCallbackMessage) => void
   private readonly timeout: NonNullable<Options['timeout']>
   private readonly onCallBeforeParams: Options['onCallBeforeParams']
   private readonly isSendErrorStack: boolean
 
-  constructor({ proxyObj, events, timeout, onCallBeforeParams, isSendErrorStack  }: Options, sendResponse: (message: ResponseMessage | RequestCallbackMessage) => void) {
-    this.proxyObj = proxyObj
+  constructor({ exposeObj, events, timeout, onCallBeforeParams, isSendErrorStack  }: Options, sendResponse: (message: ResponseMessage | RequestCallbackMessage) => void) {
+    this.exposeObj = exposeObj
     this.events = events
     this.timeout = timeout
     this.onCallBeforeParams = onCallBeforeParams
@@ -52,7 +52,7 @@ export class Local {
   }
 
   async handleRequest(eventName: string, path: string[], args: unknown[], callbacks: number[]) {
-    let obj = this.proxyObj as Record<string, unknown>
+    let obj = this.exposeObj as Record<string, unknown>
     const name = path.pop()!
     for (const _name of path) {
       obj = obj[_name] as Record<string, unknown>

@@ -38,7 +38,7 @@ const message2call = Message2call.createMessage2Call({
   /**
    * required proxy object
    */
-  proxyObj: exposeObj,
+  exposeObj: exposeObj,
   /**
    * send message function
    */

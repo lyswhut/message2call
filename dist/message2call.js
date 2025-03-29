@@ -63,13 +63,13 @@ const releaseAllProxyCallback = () => {
 
 class Local {
     events;
-    proxyObj;
+    exposeObj;
     sendResponse;
     timeout;
     onCallBeforeParams;
     isSendErrorStack;
-    constructor({ proxyObj, events, timeout, onCallBeforeParams, isSendErrorStack }, sendResponse) {
-        this.proxyObj = proxyObj;
+    constructor({ exposeObj, events, timeout, onCallBeforeParams, isSendErrorStack }, sendResponse) {
+        this.exposeObj = exposeObj;
         this.events = events;
         this.timeout = timeout;
         this.onCallBeforeParams = onCallBeforeParams;
@@ -101,7 +101,7 @@ class Local {
         });
     }
     async handleRequest(eventName, path, args, callbacks) {
-        let obj = this.proxyObj;
+        let obj = this.exposeObj;
         const name = path.pop();
         for (const _name of path) {
             obj = obj[_name];
@@ -305,7 +305,7 @@ const createMessage2Call = (options) => {
         timeout,
         isSendErrorStack,
         onCallBeforeParams: options.onCallBeforeParams,
-        proxyObj: options.proxyObj,
+        exposeObj: options.exposeObj,
     }, (message) => {
         options.sendMessage(message);
     });

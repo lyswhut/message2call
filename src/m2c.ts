@@ -24,7 +24,7 @@ export const createMessage2Call = <T>(options: Options) => {
     timeout,
     isSendErrorStack,
     onCallBeforeParams: options.onCallBeforeParams,
-    proxyObj: options.proxyObj,
+    exposeObj: options.exposeObj,
   }, (message) => {
     options.sendMessage(message)
   })
