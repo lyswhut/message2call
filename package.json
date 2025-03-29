@@ -1,6 +1,6 @@
 {
   "name": "message2call",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Convert Send Message and on Message to asynchronous get and call style",
   "main": "./dist/message2call.js",
   "module": "./dist/message2call.js",

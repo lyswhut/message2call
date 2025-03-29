@@ -6,6 +6,10 @@ Project versioning adheres to [Semantic Versioning](http://semver.org/).
 Commit convention is based on [Conventional Commits](http://conventionalcommits.org).
 Change log format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [2.0.3](https://github.com/lyswhut/message2call/compare/v2.0.2...v2.0.3) - 2025-03-29
+
+- fix `performance is not defined`
+
 ## [2.0.2](https://github.com/lyswhut/message2call/compare/v2.0.1...v2.0.2) - 2025-03-29
 
 ### BREAKING CHANGE

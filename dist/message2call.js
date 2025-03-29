@@ -13,7 +13,9 @@ const nextTick = typeof setImmediate == 'function'
         : (callback) => {
             void Promise.resolve().then(callback);
         };
-const generateId = () => performance.now().toString(36).replace('.', '') + Math.random().toString(36).slice(2);
+// const perf = typeof performance !== 'undefined' ? performance : Date
+// export const generateId = () => perf.now().toString(36).replace('.', '') + Math.random().toString(36).slice(2)
+const generateId = () => Math.random().toString(36).slice(2);
 
 const proxyCallbacks = new Map();
 class Callback {
