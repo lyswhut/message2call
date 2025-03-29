@@ -34,11 +34,11 @@ const exposeObj = {
     }, 500)
   },
 }
-const message2call = Message2call.createMsg2call({
+const message2call = Message2call.createMessage2Call({
   /**
    * required proxy object
    */
-  funcsObj: exposeObj,
+  proxyObj: exposeObj,
   /**
    * send message function
    */

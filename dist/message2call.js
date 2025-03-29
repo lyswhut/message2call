@@ -1,4 +1,10 @@
-'use strict';
+var CALL_TYPES;
+(function (CALL_TYPES) {
+    CALL_TYPES[CALL_TYPES["REQUEST"] = 0] = "REQUEST";
+    CALL_TYPES[CALL_TYPES["RESPONSE"] = 1] = "RESPONSE";
+    CALL_TYPES[CALL_TYPES["CALLBACK_REQUEST"] = 2] = "CALLBACK_REQUEST";
+    CALL_TYPES[CALL_TYPES["CALLBACK_RESPONSE"] = 3] = "CALLBACK_RESPONSE";
+})(CALL_TYPES || (CALL_TYPES = {}));
 
 const nextTick = typeof setImmediate == 'function'
     ? setImmediate
@@ -7,49 +13,20 @@ const nextTick = typeof setImmediate == 'function'
         : (callback) => {
             void Promise.resolve().then(callback);
         };
+const generateId = () => performance.now().toString(36).replace('.', '') + Math.random().toString(36).slice(2);
 
-var CALL_TYPES;
-(function (CALL_TYPES) {
-    CALL_TYPES[CALL_TYPES["REQUEST"] = 0] = "REQUEST";
-    CALL_TYPES[CALL_TYPES["RESPONSE"] = 1] = "RESPONSE";
-    CALL_TYPES[CALL_TYPES["CALLBACK_REQUEST"] = 2] = "CALLBACK_REQUEST";
-    CALL_TYPES[CALL_TYPES["CALLBACK_RESPONSE"] = 3] = "CALLBACK_RESPONSE";
-})(CALL_TYPES || (CALL_TYPES = {}));
 const proxyCallbacks = new Map();
-const emptyObj = {};
-const noop = () => { };
-const funcsTools = {
-    funcsObj: emptyObj,
-    events: emptyObj,
-    remoteGroups: emptyObj,
-    sendMessage: noop,
-    onError: noop,
-    onCallBeforeParams: undefined,
-    timeout: 120 * 1000,
-    isSendErrorStack: false,
-    init(options) {
-        this.funcsObj = options.funcsObj;
-        this.events = new Map();
-        this.remoteGroups = new Map();
-        this.sendMessage = options.sendMessage;
-        if (options.timeout != null)
-            this.timeout = options.timeout;
-        if (options.isSendErrorStack != null)
-            this.isSendErrorStack = options.isSendErrorStack;
-        if (options.onError != null)
-            this.onError = options.onError;
-        if (options.onCallBeforeParams != null)
-            this.onCallBeforeParams = options.onCallBeforeParams;
-        return this.createProxy(this, null);
-    },
+class Callback {
+    sendResponse;
+    isSendErrorStack;
+    constructor(options, sendResponse) {
+        this.sendResponse = sendResponse;
+        this.isSendErrorStack = options.isSendErrorStack ?? false;
+    }
     async handleCallbackRequest(callbackName, args) {
         const handler = proxyCallbacks.get(callbackName);
         if (!handler) {
-            this.sendMessage({
-                type: CALL_TYPES.CALLBACK_RESPONSE,
-                name: callbackName,
-                error: { message: `${callbackName} is released` },
-            });
+            this.sendResponse([CALL_TYPES.CALLBACK_RESPONSE, callbackName, { message: `${callbackName} is released` }]);
             return;
         }
         let result;
@@ -57,20 +34,48 @@ const funcsTools = {
             result = await handler(...args);
         }
         catch (err) {
-            this.sendMessage({
-                type: CALL_TYPES.CALLBACK_RESPONSE,
-                name: callbackName,
-                error: { message: err.message, stack: this.isSendErrorStack ? err.stack : undefined },
-            });
+            this.sendResponse([CALL_TYPES.CALLBACK_RESPONSE, callbackName, {
+                    message: err.message,
+                    stack: this.isSendErrorStack ? err.stack : undefined,
+                }]);
             return;
         }
-        this.sendMessage({
-            type: CALL_TYPES.RESPONSE,
-            name: callbackName,
-            error: null,
-            data: result,
-        });
-    },
+        this.sendResponse([CALL_TYPES.CALLBACK_RESPONSE, callbackName, null, result]);
+    }
+}
+/**
+ * create a proxy callback
+ */
+const createProxyCallback = (callback) => {
+    const name = callback.__msg2call_cbname__ = `func_${proxyCallbacks.size}_${generateId()}`;
+    proxyCallbacks.set(name, callback);
+    callback.releaseProxy = () => {
+        proxyCallbacks.delete(name);
+    };
+    return callback;
+};
+/**
+ * release all created proxy callback
+ */
+const releaseAllProxyCallback = () => {
+    proxyCallbacks.clear();
+};
+
+class Local {
+    events;
+    proxyObj;
+    sendResponse;
+    timeout;
+    onCallBeforeParams;
+    isSendErrorStack;
+    constructor({ proxyObj, events, timeout, onCallBeforeParams, isSendErrorStack }, sendResponse) {
+        this.proxyObj = proxyObj;
+        this.events = events;
+        this.timeout = timeout;
+        this.onCallBeforeParams = onCallBeforeParams;
+        this.isSendErrorStack = isSendErrorStack;
+        this.sendResponse = sendResponse;
+    }
     async handleCallbackData(callbackName, timeout, args) {
         return new Promise((resolve, reject) => {
             const handler = ((err, data) => {
@@ -92,24 +97,16 @@ const funcsTools = {
                     handler({ message: 'call remote timeout' });
                 }, timeout);
             }
-            this.sendMessage({
-                type: CALL_TYPES.CALLBACK_REQUEST,
-                name: callbackName,
-                args,
-            });
+            this.sendResponse([CALL_TYPES.CALLBACK_REQUEST, callbackName, args]);
         });
-    },
+    }
     async handleRequest(eventName, path, args, callbacks) {
-        let obj = this.funcsObj;
+        let obj = this.proxyObj;
         const name = path.pop();
         for (const _name of path) {
             obj = obj[_name];
             if (obj === undefined) {
-                this.sendMessage({
-                    type: CALL_TYPES.RESPONSE,
-                    name: eventName,
-                    error: { message: `${name} is not defined` },
-                });
+                this.sendResponse([CALL_TYPES.RESPONSE, eventName, { message: `${_name} is not defined` }]);
                 return;
             }
         }
@@ -117,7 +114,7 @@ const funcsTools = {
             let result;
             if (callbacks.length) {
                 for (const index of callbacks) {
-                    // eslint-disable-next-line @typescript-eslint/no-this-alias
+                    // eslint-disable-next-line consistent-this, @typescript-eslint/no-this-alias
                     const context = this;
                     const name = args[index];
                     args.splice(index, 1, async function (...args) {
@@ -132,64 +129,79 @@ const funcsTools = {
                 result = await obj[name].apply(obj, args);
             }
             catch (err) {
-                this.sendMessage({
-                    type: CALL_TYPES.RESPONSE,
-                    name: eventName,
-                    error: { message: err.message, stack: this.isSendErrorStack ? err.stack : undefined },
-                });
+                this.sendResponse([
+                    CALL_TYPES.RESPONSE,
+                    eventName,
+                    { message: err.message, stack: this.isSendErrorStack ? err.stack : undefined },
+                ]);
                 return;
             }
-            this.sendMessage({
-                type: CALL_TYPES.RESPONSE,
-                name: eventName,
-                error: null,
-                data: result,
-            });
+            this.sendResponse([
+                CALL_TYPES.RESPONSE,
+                eventName,
+                null,
+                result,
+            ]);
         }
         else if (obj[name] === undefined) {
-            this.sendMessage({
-                type: CALL_TYPES.RESPONSE,
-                name: eventName,
-                error: { message: `${name} is not defined` },
-            });
+            this.sendResponse([
+                CALL_TYPES.RESPONSE,
+                eventName,
+                { message: `${name} is not defined` },
+            ]);
         }
         else {
-            this.sendMessage({
-                type: CALL_TYPES.RESPONSE,
-                name: eventName,
-                error: null,
-                data: obj[name],
-            });
+            this.sendResponse([
+                CALL_TYPES.RESPONSE,
+                eventName,
+                null,
+                obj[name],
+            ]);
         }
-    },
+    }
+}
+
+class Remote {
+    events;
+    remoteGroups;
+    sendRequest;
+    onError;
+    timeout;
+    constructor(options, sendRequest) {
+        this.remoteGroups = new Map();
+        this.events = options.events;
+        this.timeout = options.timeout;
+        this.onError = options.onError;
+        this.sendRequest = sendRequest;
+    }
     handleGroupNextTask(groupName, error) {
         nextTick(() => {
-            const group = this.remoteGroups.get(groupName);
+            const group = (this.remoteGroups.get(groupName));
             group.handling = false;
             if (group.queue.length) {
                 if (error == null) {
-                    group.queue.shift()[0]();
+                    (group.queue.shift())[0]();
                 }
                 else {
-                    group.queue.shift()[1](error);
+                    (group.queue.shift())[1](error);
                 }
             }
         });
-    },
+    }
     async waitQueue(group, groupName, pathname) {
         if (group.handling) {
             await new Promise((resolve, reject) => {
                 group.queue.push([resolve, (error) => {
                         reject(error);
-                        this.onError(error, pathname, groupName);
+                        this.onError?.(error, pathname, groupName);
                         this.handleGroupNextTask(groupName, error);
                     }]);
             });
         }
         group.handling = true;
-    },
+    }
     async handleData(groupName, pathname, timeout, args) {
-        const eventName = `${pathname.join('.')}__${String(Math.random()).substring(2)}`;
+        const eventName = `${pathname.join('.')}_${generateId()}`;
         return new Promise((resolve, reject) => {
             const handler = ((err, data) => {
                 if (handler.timeout)
@@ -200,7 +212,7 @@ const funcsTools = {
                 else {
                     const error = new Error(err.message);
                     error.stack = err.stack;
-                    this.onError(error, pathname, groupName);
+                    this.onError?.(error, pathname, groupName);
                     reject(error);
                 }
             });
@@ -221,18 +233,12 @@ const funcsTools = {
                     handler({ message: 'call remote timeout' });
                 }, timeout);
             }
-            this.sendMessage({
-                type: CALL_TYPES.REQUEST,
-                name: eventName,
-                path: pathname,
-                args,
-                cbs: callbacks,
-            });
+            this.sendRequest([CALL_TYPES.REQUEST, eventName, pathname, args, callbacks]);
         });
-    },
+    }
     async getData(groupName, pathname, args) {
         // console.log(groupName, pathname, data)
-        let timeout = this.timeout;
+        let { timeout } = this;
         let isQueue = false;
         if (groupName != null) {
             let group = this.remoteGroups.get(groupName);
@@ -248,24 +254,13 @@ const funcsTools = {
             promise = promise.then((data) => {
                 this.handleGroupNextTask(groupName);
                 return data;
-                // eslint-disable-next-line @typescript-eslint/promise-function-async
             }).catch((error) => {
                 this.handleGroupNextTask(groupName, error);
-                return Promise.reject(error);
+                throw error;
             });
         }
         return promise;
-    },
-    async handleResponse(name, err, data) {
-        const handler = this.events.get(name);
-        // if (handler) {
-        if (typeof handler == 'function')
-            handler(err, data);
-        // else if (Array.isArray(handler)) {
-        //   for (const h of handler) await h(data)
-        // }
-        // }
-    },
+    }
     createProxy(context, groupName, path = []) {
         const proxy = new Proxy(function () { }, {
             get: (_target, prop, receiver) => {
@@ -277,76 +272,93 @@ const funcsTools = {
                 }
                 return context.createProxy(context, groupName, [...path, propName]);
             },
-            // eslint-disable-next-line @typescript-eslint/promise-function-async
-            apply: (target, thisArg, argumentsList) => {
-                return context.getData(groupName, path, argumentsList);
-            },
+            apply: async (target, thisArg, argumentsList) => context.getData(groupName, path, argumentsList),
             // deleteProperty
         });
         return proxy;
-    },
-    onMessage(message) {
-        switch (message.type) {
+    }
+    /**
+     * create remote proxy object of group calls
+     */
+    createRemoteGroup(groupName, options = {}) {
+        this.remoteGroups.set(groupName, { handling: false, queue: [], options });
+        return this.createProxy(this, groupName);
+    }
+}
+
+const createMessage2Call = (options) => {
+    const events = new Map();
+    const timeout = options.timeout ?? 120_000;
+    const isSendErrorStack = options.isSendErrorStack ?? false;
+    const remote = new Remote({
+        events,
+        timeout,
+        onError: options.onError,
+    }, (message) => {
+        options.sendMessage(message);
+    });
+    const callback = new Callback(options, (message) => {
+        options.sendMessage(message);
+    });
+    const local = new Local({
+        events,
+        timeout,
+        isSendErrorStack,
+        onCallBeforeParams: options.onCallBeforeParams,
+        proxyObj: options.proxyObj,
+    }, (message) => {
+        options.sendMessage(message);
+    });
+    const handleResponse = async (name, err, data) => {
+        const handler = events.get(name);
+        // if (handler) {
+        if (typeof handler == 'function')
+            handler(err, data);
+        // else if (Array.isArray(handler)) {
+        //   for (const h of handler) await h(data)
+        // }
+        // }
+    };
+    const message = (message) => {
+        if (!Array.isArray(message))
+            throw new Error('message is not array');
+        const _message = message;
+        switch (_message[0]) {
             case CALL_TYPES.REQUEST:
-                void this.handleRequest(message.name, message.path, message.args, message.cbs);
+                void local.handleRequest(_message[1], _message[2], _message[3], _message[4]);
                 break;
             case CALL_TYPES.CALLBACK_REQUEST:
-                void this.handleCallbackRequest(message.name, message.args);
+                void callback.handleCallbackRequest(_message[1], _message[2]);
                 break;
             case CALL_TYPES.RESPONSE:
             case CALL_TYPES.CALLBACK_RESPONSE:
-                void this.handleResponse(message.name, message.error, message.data);
+                void handleResponse(_message[1], _message[2], _message[3]);
                 break;
         }
-    },
-    onDestroy() {
-        for (const handler of this.events.values()) {
+    };
+    const destroy = () => {
+        for (const handler of events.values()) {
             handler({ message: 'destroy' });
         }
-    },
-};
-const createMsg2call = (options) => {
-    const tools = Object.create(funcsTools);
+    };
     return {
         /**
          * remote proxy object
          */
-        remote: tools.init(options),
+        remote: remote.createProxy(remote, null),
         /**
          * create remote proxy object of group calls
          */
-        createRemoteGroup(groupName, options = {}) {
-            tools.remoteGroups.set(groupName, { handling: false, queue: [], options });
-            return tools.createProxy(tools, groupName);
-        },
+        createRemoteGroup: remote.createRemoteGroup.bind(remote),
         /**
          * on message function
          */
-        message: tools.onMessage.bind(tools),
+        message,
         /**
          * destroy
          */
-        destroy: tools.onDestroy.bind(tools),
+        destroy,
     };
-};
-/**
- * create a proxy callback
- */
-const createProxyCallback = (callback) => {
-    const name = callback.__msg2call_cbname__ = `func_${proxyCallbacks.size}_${String(Math.random()).substring(2, 10)}`;
-    proxyCallbacks.set(name, callback);
-    callback.releaseProxy = () => {
-        proxyCallbacks.delete(name);
-    };
-    return callback;
-};
-/**
- * release all created proxy callback
- */
-const releaseAllProxyCallback = () => {
-    proxyCallbacks.clear();
 };
 
-exports.createMsg2call = createMsg2call;
-exports.createProxyCallback = createProxyCallback;
-exports.releaseAllProxyCallback = releaseAllProxyCallback;
+export { createMessage2Call, createProxyCallback, releaseAllProxyCallback };

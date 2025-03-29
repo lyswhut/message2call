@@ -6,6 +6,14 @@ Project versioning adheres to [Semantic Versioning](http://semver.org/).
 Commit convention is based on [Conventional Commits](http://conventionalcommits.org).
 Change log format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [2.0.0](https://github.com/lyswhut/message2call/compare/v1.1.1...v2.0.0) - 2025-03-26
+
+### BREAKING CHANGE
+
+- Changing the message data format
+- Rename `createMsg2call` to `createMessage2Call`
+- Convert to pure ESM module
+
 ## [1.1.1](https://github.com/lyswhut/message2call/compare/v1.1.0...v1.1.1) - 2024-12-05
 
 ### Fix

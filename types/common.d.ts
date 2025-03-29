@@ -1,14 +1,14 @@
-export declare type ReadObj = Record<string, ((...args: any[]) => any) | string | number | object>
+export declare type ReadObj = Record<string, ((...args: unknown[]) => unknown) | string | number | object>
 
 export declare interface Options {
   /**
    * required proxy object
    */
-  funcsObj: Readonly<ReadObj>
+  proxyObj: Readonly<ReadObj>
   /**
    * send message function
    */
-  sendMessage: (data: Record<string, unknown>) => void
+  sendMessage: (data: unknown) => void
   /**
    * on call error hook
    */
@@ -24,5 +24,5 @@ export declare interface Options {
   /**
    * convert call params
    */
-  onCallBeforeParams?: (rawArgs: any[]) => any[]
+  onCallBeforeParams?: (rawArgs: unknown[]) => unknown[]
 }

@@ -4,6 +4,7 @@
 
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "lib": ["dom", "dom.iterable", "esnext"],
     "composite": false,
     "target": "ESNext",
     // typescript options here
@@ -15,13 +16,16 @@
     "resolveJsonModule": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "allowJs": true,
+    "checkJs": true,
+    "isolatedModules": true,
     
     "baseUrl": "./src",
     "paths": {
       "@/*": ["./*"],
     },
   },
-  "include": ["src/**/*", "types"],
-  "exclude": ["node_modules"],
+  "include": ["src/**/*.ts", "src/**/*.js", "types"],
+  "exclude": ["**/node_modules/@types/node/*", "demo"],
   "references": [{ "path": "./tsconfig.node.json" }],
 }

@@ -14,6 +14,6 @@
     // "declarationMap": true,
     // "noImplicitReturns": false,
   },
-  "include": ["rollup.config.iife.js", "rollup.config.js"],
+  "include": ["rollup.config.iife.mjs", "rollup.config.mjs"],
   "exclude": ["node_modules"]
 }

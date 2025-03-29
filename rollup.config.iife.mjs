@@ -1,20 +1,19 @@
-const terser = require('@rollup/plugin-terser')
-const babel = require('@rollup/plugin-babel')
-const resolve = require('@rollup/plugin-node-resolve')
-const commonjs = require('@rollup/plugin-commonjs')
+import terser from '@rollup/plugin-terser'
+import babel from '@rollup/plugin-babel'
+import resolve from '@rollup/plugin-node-resolve'
+import commonjs from '@rollup/plugin-commonjs'
 // const typescript = require('@rollup/plugin-typescript')
-const fs = require('node:fs')
-const path = require('node:path')
+import pkg from './package.json' with { type: 'json' }
 
-const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), './package.json')))
 const banner = `/**!
 * message2call.js v${pkg.version}
 * Homepage: ${pkg.homepage}
 * License: ${pkg.license}
 */`
 
-module.exports = {
-  input: 'dist/message2call.esm.js',
+/** @type {import('rollup').RollupOptions} */
+export default {
+  input: 'dist/message2call.js',
   output: [
     {
       file: 'dist/message2call.min.js',
