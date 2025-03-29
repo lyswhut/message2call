@@ -62,7 +62,7 @@ see [demo](https://lyswhut.github.io/message2call/demo/index.html)
       /**
        * required proxy object
        */
-      funcsObj: exposeObj,
+      proxyObj: exposeObj,
       /**
        * send message function
        */
@@ -106,7 +106,7 @@ const message2call = Message2call.createMsg2call({
   /**
    * required proxy object
    */
-  funcsObj: exposeObj,
+  proxyObj: exposeObj,
   /**
    * send message function
    */
@@ -131,7 +131,7 @@ interface Options {
   /**
    * required proxy object
    */
-  funcsObj: Readonly<Record<string, ((...args: any[]) => any) | string | number | object>>
+  proxyObj: Readonly<Record<string, ((...args: any[]) => any) | string | number | object>>
   /**
    * send message function
    */
