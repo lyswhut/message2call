@@ -58,7 +58,7 @@ see [demo](https://lyswhut.github.io/message2call/demo/index.html)
         return 'hello ' + fromName + ', I am index.html'
       },
     }
-    const message2call = Message2call.createMsg2call({
+    const message2call = Message2call.createMessage2Call({
       /**
        * required expose object
        */
@@ -102,7 +102,7 @@ const exposeObj = {
     })
   },
 }
-const message2call = Message2call.createMsg2call({
+const message2call = Message2call.createMessage2Call({
   /**
    * required expose object
    */
@@ -153,7 +153,7 @@ interface Options {
    */
   onCallBeforeParams?: (rawArgs: any[]) => any[]
 }
-type createMsg2call = <T>(options: Options) => {
+type createMessage2Call = <T>(options: Options) => {
   /**
    * remote expose object
    */
